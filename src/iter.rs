@@ -1,24 +1,33 @@
-use super::Matrix;
-use core::iter::StepBy;
-use core::slice::{self, Chunks, ChunksMut};
-use num::Num;
+use super::{
+    Matrix,
+    num_trait::Prim
 
-impl<'a, T> IntoIterator for &'a Matrix<T> {
+};
+
+use std::iter::StepBy;
+use std::slice::{self, Chunks, ChunksMut};
+
+impl<'a, T> IntoIterator for &'a Matrix<T>
+where
+    T: Prim,
+{
     type IntoIter = Chunks<'a, T>;
     type Item = &'a [T];
     fn into_iter(self) -> Self::IntoIter {
-        self.nums.chunks(self.n)
+        self.nums.chunks(self.height())
     }
 }
 
-impl<'a, T> IntoIterator for &'a mut Matrix<T> {
+impl<'a, T> IntoIterator for &'a mut Matrix<T>
+where
+    T: Prim,
+{
     type IntoIter = ChunksMut<'a, T>;
     type Item = &'a mut [T];
     fn into_iter(self) -> Self::IntoIter {
-        self.nums.chunks_mut(self.n)
+        self.nums.chunks_mut(self.height())
     }
 }
-
 
 pub struct Cols<'a, T> {
     matrix: &'a Matrix<T>,
@@ -33,7 +42,7 @@ impl<'a, T> Cols<'a, T> {
 
 impl<'a, T> Iterator for Cols<'a, T>
 where
-    T: Num + Clone + Copy,
+    T: Prim,
 {
     type Item = StepBy<slice::Iter<'a, T>>;
     fn next(&mut self) -> Option<Self::Item> {
@@ -42,16 +51,10 @@ where
         } else {
             let idx = self.idx;
             self.idx += 1;
-            Some(
-                self.matrix.nums[idx..]
-                    .iter()
-                    .step_by(self.matrix.width()),
-            )
+            Some(self.matrix.nums[idx..].iter().step_by(self.matrix.width()))
         }
     }
 }
-
-
 
 // pub struct ColsMut<'a, T> {
 //     matrix: &'a mut Matrix<T>,
@@ -66,7 +69,7 @@ where
 //
 // impl<'a, T> Iterator for ColsMut<'a, T>
 // where
-//     T: Num + Clone + Copy + std::fmt::Debug,
+//     T: Num + Clone,
 // {
 //     type Item = StepBy<slice::IterMut<'a, T>>;
 //
